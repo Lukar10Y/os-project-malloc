@@ -47,8 +47,20 @@ void *helper_my_malloc(const size_t* size, void *ptr) {
 void my_free(void *ptr) {
     // TODO: Marcar el bloque como libre.
     // TODO: Fusionar bloques adyacentes (Coalescing).
-    if(ptr == NULL) {
-        return;
+    if(ptr != NULL) {
+        block_meta *block = (block_meta*)ptr-1;
+        block->free = 1;
+        if(block->next != NULL && block->next->free) {
+            block->size += block->next->size;
+            block->next = block->next->next;
+        }
+        if(ptr != base) {
+            block_meta *prev = (block_meta*)ptr-2;
+            if(prev->free) {
+                prev->size += block->size;
+                prev->next = block->next;
+            }
+        }
     }
 }
 
