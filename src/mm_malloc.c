@@ -80,11 +80,20 @@ void *my_calloc(size_t nmemb, size_t size) {
 
 void *my_realloc(void *ptr, size_t size) {
     // TODO: Redimensionar el bloque o moverlo a uno nuevo.
-    if(ptr == NULL) {
-        return NULL;
-    }
-    if(size == 0) {
-        return NULL;
+    if(ptr != NULL && size > 0) {
+        block_meta *block = (block_meta*)ptr-1;
+        if(size < block->size) {
+            block->size = size;
+            return ptr;
+        }
+        else {
+            void *reallocate = my_malloc(size);
+            if(reallocate != NULL) {
+                memcpy(reallocate, ptr, block->size);
+                my_free(ptr);
+                return reallocate;
+            }
+        }
     }
     return NULL;
 }
