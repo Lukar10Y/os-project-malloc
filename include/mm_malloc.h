@@ -14,6 +14,8 @@ typedef struct block_meta {
 
 #define META_SIZE sizeof(struct block_meta)
 
+void *helper_my_malloc(const size_t* size, void *ptr);
+
 // API Pública
 void *my_malloc(size_t size);
 void my_free(void *ptr);
