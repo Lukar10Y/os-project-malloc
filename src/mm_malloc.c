@@ -1,5 +1,6 @@
 #include <unistd.h> // Para sbrk
 #include "mm_malloc.h"
+#include <string.h>
 
 // Inicio de la lista enlazada del heap
 void *base = NULL;
@@ -50,15 +51,14 @@ void my_free(void *ptr) {
     if(ptr != NULL) {
         block_meta *block = (block_meta*)ptr-1;
         block->free = 1;
-        if(block->next != NULL && block->next->free) {
-            block->size += block->next->size;
-            block->next = block->next->next;
-        }
-        if(ptr != base) {
-            block_meta *prev = (block_meta*)ptr-2;
-            if(prev->free) {
-                prev->size += block->size;
-                prev->next = block->next;
+        block_meta *current = (block_meta*)base;
+        while (current != NULL && current->next != NULL) {
+            if (current->free && current->next->free) {
+                current->size += current->next->size + sizeof(block_meta);
+                current->next = current->next->next;
+            } 
+            else {
+                current = current->next;
             }
         }
     }
@@ -66,8 +66,14 @@ void my_free(void *ptr) {
 
 void *my_calloc(size_t nmemb, size_t size) {
     // TODO: Usar my_malloc y luego memset a 0.
-    if(nmemb == 0 || size == 0) {
-        return NULL;
+    size_t aux = nmemb * size;
+    if(aux != 0) {
+        void *ptr = my_malloc(aux);
+        if (ptr!=NULL)
+        {
+            memset(ptr, 0, aux);
+            return ptr;
+        } 
     }
     return NULL;
 }
@@ -75,10 +81,9 @@ void *my_calloc(size_t nmemb, size_t size) {
 void *my_realloc(void *ptr, size_t size) {
     // TODO: Redimensionar el bloque o moverlo a uno nuevo.
     if(ptr == NULL) {
-        return my_malloc(size);
+        return NULL;
     }
     if(size == 0) {
-        my_free(ptr);
         return NULL;
     }
     return NULL;
